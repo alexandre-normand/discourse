@@ -2,37 +2,21 @@ import componentTest from 'helpers/component-test';
 
 moduleForComponent('post-menu', {integration: true});
 
-function setup(store) {
-  const topic = store.createRecord('topic', {id: 123});
-  const post = store.createRecord('post', {
-    id: 1,
-    post_number: 1,
-    topic,
-    like_count: 3,
-    actions_summary: [
-      {id: 2, count: 3, hidden: false, can_act: true}
-    ]
-  });
-
-  this.on('toggleLike', function() {
-    post.toggleProperty('likeAction.acted');
-  });
-
-  this.set('post', post);
-}
-
-componentTest('basic render', {
-  template: '{{post-menu post=post}}',
-  setup,
+componentTest('share button', {
+  template: '{{mount-widget widget="post-menu" args=args}}',
+  setup() {
+    this.set('args', { shareUrl: 'http://share-me.example.com' });
+  },
   test(assert) {
-    assert.ok(!!this.$('.post-menu-area').length, 'it renders a post menu');
     assert.ok(!!this.$('.actions button[data-share-url]').length, 'it renders a share button');
   }
 });
 
 componentTest('liking', {
-  template: '{{post-menu post=post toggleLike="toggleLike"}}',
-  setup,
+  template: '{{mount-widget widget="post-menu" args=args}}',
+  setup() {
+    this.set('args', { showLike: true, canToggleLike: true, likeCount: 1 });
+  },
   test(assert) {
     assert.ok(!!this.$('.actions button.like').length);
     assert.ok(!!this.$('.actions button.like-count').length);

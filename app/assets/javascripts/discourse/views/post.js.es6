@@ -7,15 +7,7 @@ import { fmt } from 'discourse/lib/computed';
 const DAY = 60 * 50 * 1000;
 
 const PostView = Discourse.GroupedView.extend(Ember.Evented, {
-  classNames: ['topic-post', 'clearfix'],
-  classNameBindings: ['needsModeratorClass:moderator:regular',
-                      'selected',
-                      'post.hidden:post-hidden',
-                      'post.deleted:deleted',
-                      'post.topicOwner:topic-owner',
-                      'groupNameClass',
-                      'post.wiki:wiki',
-                      'whisper'],
+  classNameBindings: ['selected'],
 
   post: Ember.computed.alias('content'),
   postElementId: fmt('post.post_number', 'post_%@'),
@@ -24,11 +16,6 @@ const PostView = Discourse.GroupedView.extend(Ember.Evented, {
   @on('init')
   initLikedUsers() {
     this.set('likedUsers', []);
-  },
-
-  @computed('post.post_type')
-  whisper(postType) {
-    return postType === this.site.get('post_types.whisper');
   },
 
   templateName: function() {
