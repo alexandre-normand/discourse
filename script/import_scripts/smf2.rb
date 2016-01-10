@@ -150,8 +150,8 @@ class ImportScripts::Smf2 < ImportScripts::Base
       restricted = !groups.include?(GUEST_GROUP) && !groups.include?(MEMBER_GROUP)
       {
         id: board[:id_board],
-        name: board[:name],
-        description: board[:description],
+        name: decode_entities(board[:name]),
+        description: decode_entities(board[:description]),
         parent_category_id: parent_id,
         post_create_action: restricted && proc do |category|
           category.update(read_restricted: true)
