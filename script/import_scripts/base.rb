@@ -14,6 +14,7 @@ end
 require_relative '../../config/environment'
 require_relative 'base/lookup_container'
 require_relative 'base/uploader'
+require 'pry'
 
 module ImportScripts; end
 
@@ -395,6 +396,9 @@ class ImportScripts::Base
     new_category.custom_fields["import_id"] = import_id if import_id
     new_category.save!
 
+    puts "creating permalink from /index.php?board=#{import_id}.0 to category id #{new_category[:id]}"
+    Permalink.create(url: "/index.php?board=#{import_id}.0", category_id: new_category[:id].to_i)
+
     @lookup.add_category(import_id, new_category)
 
     post_create_action.try(:call, new_category)
@@ -402,7 +406,7 @@ class ImportScripts::Base
     new_category
   end
 
-  def created_post(post)
+  def created_post(post, import_id, topic_import_id)
     # override if needed
   end
 
@@ -425,6 +429,7 @@ class ImportScripts::Base
         skipped += 1
       else
         import_id = params.delete(:id).to_s
+        topic_import_id = params.delete(:topic_import_id).to_s
 
         if @lookup.post_id_from_imported_post_id(import_id)
           skipped += 1 # already imported this post
@@ -432,10 +437,10 @@ class ImportScripts::Base
           begin
             new_post = create_post(params, import_id)
             if new_post.is_a?(Post)
-              @lookup.add_post(import_id, new_post)
+              @lookup.add_post(import_id, new_post)              
               @lookup.add_topic(new_post)
 
-              created_post(new_post)
+              created_post(new_post, import_id, topic_import_id)
 
               created += 1
             else

@@ -7,6 +7,7 @@ require 'set'
 require 'optparse'
 require 'etc'
 require 'open3'
+require 'pry'
 
 class ImportScripts::Smf2 < ImportScripts::Base
 
@@ -86,6 +87,25 @@ class ImportScripts::Smf2 < ImportScripts::Base
   MEMBER_GROUP = 0
   ADMIN_GROUP = 1
   MODERATORS_GROUP = 2
+
+  def created_post(post, import_id, topic_import_id)
+    unless (Permalink.exists?(topic_id: post[:topic_id].to_i)) 
+#      puts "Adding permalink from /index.php?topic=#{topic_import_id} to topic id #{post[:topic_id]}"
+      Permalink.create(url: "/index.php?topic=#{topic_import_id}", topic_id: post[:topic_id].to_i)
+
+#      puts "Adding permalink from /index.php?topic=#{topic_import_id}.0 to topic id #{post[:topic_id]}"
+      Permalink.create(url: "/index.php?topic=#{topic_import_id}.0", topic_id: post[:topic_id].to_i)      
+
+      for i in 1..1000 
+#        puts "Adding permalink from /index.php?topic=#{topic_import_id}.#{i} to topic id #{post[:topic_id]}"
+        Permalink.create(url: "/index.php?topic=#{topic_import_id}.#{i}", topic_id: post[:topic_id].to_i)
+      end
+      
+    end
+    
+#    puts "Adding permalink from /index.php?topic=#{topic_import_id}.msg#{import_id} to post id #{post[:id]}"
+    Permalink.create(url: "/index.php?topic=#{topic_import_id}.msg#{import_id}", post_id: post[:id].to_i)
+  end
 
   def import_users
     puts '', 'creating users'
@@ -251,6 +271,7 @@ class ImportScripts::Smf2 < ImportScripts::Base
         id: message[:id_msg],
         user_id: user_id_from_imported_user_id(message[:id_member]) || -1,
         created_at: Time.zone.at(message[:poster_time]),
+        topic_import_id: message[:id_topic],
         post_create_action: ignore_quotes && proc do |post|
           post.custom_fields['import_rebake'] = 't'
           post.save
